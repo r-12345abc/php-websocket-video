@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tailwind Video Embed</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* 小さなフォールバックスタイル */
+    .video-container:focus { outline: 2px solid rgba(99,102,241,0.5); }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-6">
+  <main class="max-w-4xl w-full">
+    <header class="mb-6">
+      <h1 class="text-3xl font-semibold text-gray-800">php websocket</h1>
+      <p class="mt-2 text-gray-600">Tailwind CSS を使ってそれっぽく整えた埋め込みビデオの例です。</p>
+    </header>
+
+    <!-- ビデオカード -->
+    <section class="bg-white rounded-2xl shadow-lg overflow-hidden">
+      <div class="relative video-container" tabindex="0">
+        <!-- アスペクト比を保つラッパー -->
+        <div class="aspect-w-16 aspect-h-9 bg-black">
+          <video id="heroVideo" poster="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1400&q=80" class="w-full h-full object-cover" controls crossorigin>            <track kind="captions" srclang="ja" label="日本語字幕" src="subtitles.vtt" default>
+            お使いのブラウザは video 要素をサポートしていません。
+          </video>
+
+          <!-- カスタム中央プレイボタン（controls が非表示のときに使う用途も想定） -->
+          <button id="centerPlay" aria-label="再生" class="absolute inset-0 m-auto w-20 h-20 rounded-full bg-white/90 shadow-lg flex items-center justify-center opacity-100 hover:scale-105 transition-transform">
+            <svg id="centerPlayIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-10 h-10 text-indigo-600">
+              <path fill="currentColor" d="M8 5v14l11-7z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- メタ情報とカスタムコントロール -->
+      <div class="p-5">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-medium text-gray-800">php websocket</h2>
+            <p class="text-sm text-gray-500 mt-1">フルスクリーン・ミュート・再生の操作が使えます。</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="muteBtn" class="px-3 py-2 rounded-md bg-gray-100 text-sm text-gray-700 hover:bg-gray-200">ミュート</button>
+            <button id="fsBtn" class="px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700">フルスクリーン</button>
+          </div>
+        </div>
+
+        <hr class="my-4" />
+
+        <p class="text-sm text-gray-600">アクセシビリティ: ビデオはキーボードでフォーカスでき、スペースキーまたは中央のボタンで再生／一時停止できます。</p>
+      </div>
+    </section>
+
+    <footer class="mt-6 text-center text-sm text-gray-500">© サンプル — Tailwind CSS</footer>
+  </main>
+
+  <script>
+    const video = document.getElementById('heroVideo');
+    const centerPlay = document.getElementById('centerPlay');
+    const muteBtn = document.getElementById('muteBtn');
+    const fsBtn = document.getElementById('fsBtn');
+
+    // 中央ボタンで再生 / 一時停止
+    centerPlay.addEventListener('click', () => {
+      if (video.paused) {
+        video.play();
+        centerPlay.style.opacity = '0';
+        centerPlay.style.pointerEvents = 'none';
+      } else {
+        video.pause();
+        centerPlay.style.opacity = '1';
+        centerPlay.style.pointerEvents = '';
+      }
+    });
+
+    // 動画を手動で再生したら中央ボタンを隠す
+    video.addEventListener('play', () => {
+      centerPlay.style.opacity = '0';
+      centerPlay.style.pointerEvents = 'none';
+    });
+
+    video.addEventListener('pause', () => {
+      centerPlay.style.opacity = '1';
+      centerPlay.style.pointerEvents = '';
+    });
+
+    // ミュート切り替え
+    muteBtn.addEventListener('click', () => {
+      video.muted = !video.muted;
+      muteBtn.textContent = video.muted ? 'ミュート解除' : 'ミュート';
+    });
+
+    // フルスクリーン
+    fsBtn.addEventListener('click', async () => {
+      if (!document.fullscreenElement) {
+        try {
+          await video.requestFullscreen();
+        } catch (e) {
+          // フルスクリーン失敗
+          console.warn('フルスクリーンにできませんでした', e);
+        }
+      } else {
+        await document.exitFullscreen();
+      }
+    });
+
+    // キーボード操作: スペースで再生/一時停止
+    document.querySelector('.video-container').addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (video.paused) video.play(); else video.pause();
+      }
+    });
+  </script>
+</body>
+</html>
